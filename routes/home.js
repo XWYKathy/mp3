@@ -1,10 +1,14 @@
+var response = require('./response');
+
 module.exports = function (router) {
 
     var homeRoute = router.route('/');
 
     homeRoute.get(function (req, res) {
         var connectionString = process.env.TOKEN;
-        res.json({ message: 'My connection string is ' + connectionString });
+        return response.send(res, 200, 'API is running.', {
+            token: connectionString
+        });
     });
 
     return router;
