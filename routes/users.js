@@ -133,8 +133,8 @@ router.route('/:id')
     })
     .delete(async function (req, res) {
         try {
-            var user = await referenceOperations.deleteUser(req.params.id);
-            return response.send(res, 200, 'User deleted successfully.', user);
+            await referenceOperations.deleteUser(req.params.id);
+            return res.status(204).end();
         } catch (err) {
             return sendWriteError(res, err);
         }

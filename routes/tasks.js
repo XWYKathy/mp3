@@ -129,8 +129,8 @@ router.route('/:id')
     })
     .delete(async function (req, res) {
         try {
-            var task = await referenceOperations.deleteTask(req.params.id);
-            return response.send(res, 200, 'Task deleted successfully.', task);
+            await referenceOperations.deleteTask(req.params.id);
+            return res.status(204).end();
         } catch (err) {
             return sendWriteError(res, err);
         }

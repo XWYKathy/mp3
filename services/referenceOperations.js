@@ -50,16 +50,21 @@ function uniqueIds(ids) {
     return Array.from(new Set(ids));
 }
 
-function validDeadline(value) {
+function parseDeadline(value) {
     if (typeof value !== 'string' || value.trim() === '') {
-        return false;
+        return null;
     }
 
     var normalized = value.trim();
+    var deadline = new Date(normalized);
     var dateParts = normalized.match(/^(\d{4})-(\d{2})-(\d{2})(?=$|T|\s)/);
 
-    if (!dateParts || Number.isNaN(Date.parse(normalized))) {
-        return false;
+    if (Number.isNaN(deadline.getTime())) {
+        return null;
+    }
+
+    if (!dateParts) {
+        return deadline;
     }
 
     var year = Number(dateParts[1]);
@@ -68,7 +73,11 @@ function validDeadline(value) {
     var leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
     var daysPerMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-    return month >= 1 && month <= 12 && day >= 1 && day <= daysPerMonth[month - 1];
+    if (month < 1 || month > 12 || day < 1 || day > daysPerMonth[month - 1]) {
+        return null;
+    }
+
+    return deadline;
 }
 
 function validateUser(body) {
@@ -100,6 +109,7 @@ function validateTask(body) {
     var completed = body.completed === undefined ? false : body.completed;
     var assignedUser = body.assignedUser === undefined ? '' : body.assignedUser;
     var assignedUserName = body.assignedUserName;
+    var deadline = parseDeadline(body.deadline);
 
     if (typeof description !== 'string') {
         fail(400, 'The "description" field must be a string.');
@@ -109,7 +119,7 @@ function validateTask(body) {
         fail(400, 'The "completed" field must be a boolean.');
     }
 
-    if (!validDeadline(body.deadline)) {
+    if (!deadline) {
         fail(400, 'The "deadline" field must be a valid date.');
     }
 
@@ -138,7 +148,7 @@ function validateTask(body) {
     return {
         name: requiredString(body.name, 'name'),
         description: description,
-        deadline: new Date(body.deadline),
+        deadline: deadline,
         completed: completed,
         assignedUser: assignedUser,
         assignedUserName: assignedUserName
